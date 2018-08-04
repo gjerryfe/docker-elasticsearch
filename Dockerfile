@@ -11,6 +11,7 @@ ENV ES_TARBAL "${DOWNLOAD_URL}/elasticsearch-${ES_VERSION}.tar.gz"
 ENV ES_TARBALL_ASC "${DOWNLOAD_URL}/elasticsearch-${ES_VERSION}.tar.gz.asc"
 ENV GPG_KEY "46095ACC8548582C1A2699A9D27D666CD88E42B4"
 
+
 # Install Elasticsearch.
 RUN apk add --no-cache --update bash ca-certificates su-exec util-linux curl
 RUN apk add --no-cache -t .build-deps gnupg openssl \
@@ -42,6 +43,13 @@ RUN apk add --no-cache -t .build-deps gnupg openssl \
 
 ENV PATH /elasticsearch/bin:$PATH
 
+COPY elasticsearch-analysis-ik-6.1.1.zip /elasticsearch/plugins
+WORKDIR /elasticsearch/plugins
+RUN unzip *.zip \
+  && mv elasticsearch analysis-ik \ 
+  && rm -rf *.zip
+
+
 WORKDIR /elasticsearch
 
 # Copy configuration
@@ -54,8 +62,8 @@ COPY run.sh /
 ENV ES_JAVA_OPTS "-Xms512m -Xmx512m"
 ENV CLUSTER_NAME elasticsearch-default
 ENV NODE_MASTER true
-ENV NODE_DATA true
-ENV NODE_INGEST true
+ENV NODE_DATA false
+ENV NODE_INGEST false
 ENV HTTP_ENABLE true
 ENV NETWORK_HOST _site_
 ENV HTTP_CORS_ENABLE true
@@ -64,7 +72,7 @@ ENV NUMBER_OF_MASTERS 1
 ENV MAX_LOCAL_STORAGE_NODES 1
 ENV SHARD_ALLOCATION_AWARENESS ""
 ENV SHARD_ALLOCATION_AWARENESS_ATTR ""
-ENV MEMORY_LOCK true
+ENV MEMORY_LOCK false
 
 # Volume for Elasticsearch data
 VOLUME ["/data"]
